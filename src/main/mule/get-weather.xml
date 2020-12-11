@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:validation="http://www.mulesoft.org/schema/mule/validation" xmlns:wsc="http://www.mulesoft.org/schema/mule/wsc"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/wsc http://www.mulesoft.org/schema/mule/wsc/current/mule-wsc.xsd
+http://www.mulesoft.org/schema/mule/validation http://www.mulesoft.org/schema/mule/validation/current/mule-validation.xsd">
+	<http:request-config name="HTTP_Request_configuration" doc:name="HTTP Request configuration" doc:id="d4808f47-51b5-4ab7-b85b-f7ebea3bbe49">
+		<http:request-connection protocol="HTTPS" host="api.npoint.io"/>
+	</http:request-config>
+	<http:request-config name="HTTP_Request_configuration1" doc:name="HTTP Request configuration" doc:id="2f4ed73f-3e2e-495e-91fa-50ffe15e8d1a" >
+		<http:request-connection host="localhost" port="8080" />
+	</http:request-config>
+	<flow name="get:\get-weather:weather-service-v1-config" doc:id="eb550c12-832b-4bef-a310-4871d578b993" >
+		<set-variable value="#[attributes.queryParams.city]" doc:name="Set city" doc:id="3f26de01-f113-437a-b5f2-a2a2006a9b67" variableName="city"/>
+		<set-variable value="#[attributes.queryParams.country]" doc:name="Set country" doc:id="4c384452-547b-42ce-9f05-1389f911336a" variableName="country" />
+		<ee:transform doc:name="Prepare SOAP request" doc:id="c6d90c5f-76e4-4534-9acf-fcb59f432bb7" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/xml
+ns ns0 http://www.webserviceX.NET
+---
+{
+	ns0#GetWeather: {
+		ns0#CityName: vars.city as String,
+		ns0#CountryName: vars.country as String
+	}
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<flow-ref doc:name="Flow Reference" doc:id="29658d80-a1e8-44c5-979f-7f6851102961" name="GetWeather" />
+		<ee:transform doc:name="Transform Message" doc:id="0afe05f3-2667-4bfe-bdb6-0472b62d92a1" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/xml
+
+var file = payload replace "&amp;" with "&" replace "&lt;" with "<" replace "&gt;" with ">"
+
+---
+read((read(file, "application/xml")).Envelope.Body.GetWeatherResponse, "application/xml")]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<ee:transform doc:name="Transform Message" doc:id="e1e07716-1896-49a9-a09c-869b62148b80" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload.NewDataSet mapObject (value, key, index) -> {(key): value}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="0db78aa9-8d60-4210-8b9e-b0fdbcfdf24b" message="get:\get-weather:weather-service-config" />
+	</flow>
+	<sub-flow name="GetWeather" doc:id="0960aa05-a1e0-4ca1-8946-92e7784aa14a">
+		<http:request method="POST" doc:name="Request" doc:id="68382186-6fca-4219-8cda-8e1170600f98" config-ref="HTTP_Request_configuration1" path="/GlobalWeather" outputMimeType="application/java">
+			<http:body><![CDATA[<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:web="http://www.webserviceX.NET">
+   <soapenv:Header/>
+   <soapenv:Body>
+      <web:GetWeather>
+         <!--Optional:-->
+         <web:CityName>?</web:CityName>
+         <!--Optional:-->
+         <web:CountryName>?</web:CountryName>
+      </web:GetWeather>
+   </soapenv:Body>
+</soapenv:Envelope>]]></http:body>
+			<http:headers><![CDATA[#[output application/java
+---
+{
+	"Content-Type" : "application/xml",
+}]]]></http:headers>
+		</http:request>
+	</sub-flow>
+	<flow name="working" doc:id="4c834532-c708-429e-92ef-704b0dafeb09" >
+		<ee:transform doc:name="Copy_of_Copy_of_Transform Message" doc:id="2dcdef7d-60f5-496c-99e0-01eeb4d39958">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output text/plain
+---
+payload.body.GetWeatherResponse]]></ee:set-payload>
+			</ee:message>
+			<ee:variables />
+		</ee:transform>
+		<ee:transform doc:name="Transform Message" doc:id="dc651330-4239-48ea-b4d4-7dc1a7c71cd6">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output text/plain
+
+var XMLHeader = "<?xml version=\"1.0\" encoding=\"utf-8\"?>"
+---
+XMLHeader ++ 
+	"<GetWeatherData>" ++ 
+ 		(trim(payload replace /&lt;/ with ("<") replace /&gt;/ with (">") replace /\n/ with "" replace " " with "")) ++
+	"</GetWeatherData>"]]></ee:set-payload>
+			</ee:message>
+			<ee:variables />
+		</ee:transform>
+		<ee:transform doc:name="Transform Message" doc:id="8ab6f6db-b875-4a3c-a641-7daeddad4bb6">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/xml
+---
+read(payload, "application/xml")]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<ee:transform doc:name="Transform Message" doc:id="b4ca7739-2986-4c32-9fb9-40f15b3237d9">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/xml
+---
+payload.GetWeatherData]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+	<flow name="get-weatherFlow" doc:id="5d629d9a-838f-4b8b-a634-2bb4d7c2a5b7" >
+		<ee:transform doc:name="Copy_of_Transform Message" doc:id="ae363351-eb5a-44a2-b452-1835aecbf47f">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/java
+---
+(trim(payload.body.GetWeatherResponse replace "&lt;![CDATA[" with "" replace "]]&gt;/" with ""  replace /&amp;/ with ("&")  replace /&lt;/ with ("<") replace /&gt;/ with (">") replace /\n/ with "" replace " " with ""))]]></ee:set-payload>
+			</ee:message>
+			<ee:variables />
+		</ee:transform>
+		<wsc:consume doc:name="Call /GetWeather" doc:id="0c1c76df-76a8-4da2-ae71-8a9ef5e9eeda" config-ref="Web_Service_Consumer_Config" operation="GetWeather">
+		</wsc:consume>
+	</flow>
+</mule>
