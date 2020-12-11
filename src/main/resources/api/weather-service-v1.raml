@@ -1,0 +1,23 @@
+#%RAML 1.0
+baseUri: ???
+title: Weather Service API
+version: v1
+
+/get-weather:
+  displayName: Get weather
+  description:
+  get:
+    queryParameters:
+      city:
+        displayName: City
+        type: string
+        required: false
+      country:
+        displayName: Country
+        type: string
+        required: false
+    responses:
+      200:
+        body:
+          application/json:
+            example: 
