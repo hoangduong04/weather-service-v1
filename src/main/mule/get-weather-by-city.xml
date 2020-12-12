@@ -16,8 +16,9 @@ http://www.mulesoft.org/schema/mule/validation http://www.mulesoft.org/schema/mu
 			<ee:message >
 				<ee:set-payload ><![CDATA[%dw 2.0
 output application/xml
+import decodeXmlResponse from modules::Xml
 
-var weatherData = payload replace "&amp;" with "&" replace "&lt;" with "<" replace "&gt;" with ">"
+var weatherData = decodeXmlResponse(payload)
 
 ---
 read((read(weatherData, "application/xml")).Envelope.Body.GetWeatherResponse, "application/xml")]]></ee:set-payload>
