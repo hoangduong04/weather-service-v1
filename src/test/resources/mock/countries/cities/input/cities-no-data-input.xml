@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"  xmlns:tm="http://microsoft.com/wsdl/mime/textMatching/" xmlns:tns="http://www.webserviceX.NET">
+    <soap:Body>
+        <GetCitiesByCountryResponse xmlns="http://www.webserviceX.NET">
+        </GetCitiesByCountryResponse>
+    </soap:Body>
+</soap:Envelope>

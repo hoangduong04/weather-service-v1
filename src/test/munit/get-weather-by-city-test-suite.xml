@@ -13,7 +13,7 @@
 		<set-variable value="Melbourne" doc:name="Set city" doc:id="a1ece021-5f0b-42f2-a30f-74f0bcfa851e" variableName="city"/>
 	
 </munit:before-suite>
-	<munit:test name="get-weather-by-city" doc:id="428b0462-7057-4c94-942a-723e5e9ac6ff" description="Test">
+	<munit:test name="get-weather-by-city-successful" doc:id="428b0462-7057-4c94-942a-723e5e9ac6ff" description="Test">
 		<munit:behavior >
 			<munit-tools:mock-when doc:name="Mock GetWeatherByCity request" doc:id="8fcdc437-8ebc-4090-829d-981567888b06" processor="http:request">
 				<munit-tools:with-attributes >
@@ -30,6 +30,25 @@
 		</munit:execution>
 		<munit:validation >
 			<munit-tools:assert-that doc:name="Assert payload matches the expected output" doc:id="8d996e2d-ab42-42a1-9e60-b5cfc8cfb814" expression="#[payload]" is="#[MunitTools::equalTo(readUrl('classpath://mock/countries/cities/weather/output/weather-output.json', 'application/json'))]"/>
+		</munit:validation>
+	</munit:test>
+	<munit:test name="get-weather-by-city-no-data" doc:id="4d43a477-7245-4ef7-a6e4-cbdacb8e422c" description="Test">
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Mock GetWeatherByCity request" doc:id="b277a341-724e-40bc-b9b9-2143c4db53c1" processor="http:request">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="Weather_Server_HTTP_Request_configuration" attributeName="config-ref" />
+					<munit-tools:with-attribute whereValue="/GlobalWeather" attributeName="path" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value="#[readUrl('classpath://mock/countries/cities/weather/input/weather-no-data-input.xml', 'application/java')]" />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution >
+			<flow-ref doc:name="get:\countries\(country)\cities\(city)\weather" doc:id="75f942f4-c470-45ad-80e5-fb9ad5054318" name="get:\countries\(country)\cities\(city)\weather:weather-service-v1-config"/>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert-that doc:name="Assert payload matches the expected output" doc:id="df39f5a7-b133-44dc-be78-6101fd471331" expression="#[payload]" is="#[MunitTools::equalTo(readUrl('classpath://mock/countries/cities/weather/output/weather-no-data-output.json', 'application/json'))]"/>
 		</munit:validation>
 	</munit:test>
 
