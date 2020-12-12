@@ -13,7 +13,7 @@ version: v1
           200:
             body:
               application/json:
-                example: 
+                example: !include examples/countries/cities/cities.json
       /{city}:
         /weather:
           displayName: Weather by city
@@ -23,5 +23,5 @@ version: v1
               200:
                 body:
                   application/json:
-                    example: 
+                    example: !include examples/countries/cities/weather/weather.json 
     

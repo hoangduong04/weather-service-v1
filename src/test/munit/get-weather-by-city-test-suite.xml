@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:munit="http://www.mulesoft.org/schema/mule/munit" xmlns:munit-tools="http://www.mulesoft.org/schema/mule/munit-tools"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xsi:schemaLocation="
+		http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+		http://www.mulesoft.org/schema/mule/munit http://www.mulesoft.org/schema/mule/munit/current/mule-munit.xsd
+		http://www.mulesoft.org/schema/mule/munit-tools  http://www.mulesoft.org/schema/mule/munit-tools/current/mule-munit-tools.xsd">
+	<munit:config name="get-weather-by-city-test-suite.xml" />
+	<munit:before-suite name="get-weather-by-city-before-suite" doc:id="0224c4d9-e8c6-42e7-9268-a6aa4aceb2e8" >
+		<set-variable value="Australia" doc:name="Set country" doc:id="c3446943-f727-4b92-86da-2df1dcab70ae" variableName="country"/>
+		<set-variable value="Melbourne" doc:name="Set city" doc:id="a1ece021-5f0b-42f2-a30f-74f0bcfa851e" variableName="city"/>
+	
+</munit:before-suite>
+	<munit:test name="get-weather-by-city" doc:id="428b0462-7057-4c94-942a-723e5e9ac6ff" description="Test">
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Mock GetWeatherByCity request" doc:id="8fcdc437-8ebc-4090-829d-981567888b06" processor="http:request">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="Weather_Server_HTTP_Request_configuration" attributeName="config-ref" />
+					<munit-tools:with-attribute whereValue="/GlobalWeather" attributeName="path" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value="#[readUrl('classpath://mock/countries/cities/weather/input/weather-input.xml', 'application/java')]" />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution >
+			<flow-ref doc:name="get:\countries\(country)\cities\(city)\weather" doc:id="8516631c-0fa1-48af-a8f6-74fcaa0b1c25" name="get:\countries\(country)\cities\(city)\weather:weather-service-v1-config"/>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert-that doc:name="Assert payload matches the expected output" doc:id="8d996e2d-ab42-42a1-9e60-b5cfc8cfb814" expression="#[payload]" is="#[MunitTools::equalTo(readUrl('classpath://mock/countries/cities/weather/output/weather-output.json', 'application/json'))]"/>
+		</munit:validation>
+	</munit:test>
+
+
+</mule>
