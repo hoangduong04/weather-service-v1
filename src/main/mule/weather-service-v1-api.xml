@@ -14,7 +14,9 @@
                 <http:headers><![CDATA[#[vars.outboundHeaders default {}]]]></http:headers>
             </http:error-response>
         </http:listener>
-        <apikit:router config-ref="weather-service-v1-config" />
+        <set-variable value="#[uuid()]" doc:name="Set txnID" doc:id="c3dde7ab-5e56-44dc-97e8-348a5367f165" variableName="txnID"/>
+		<set-variable value='#[now() as DateTime &gt;&gt; "${weather-service-v1.locale}"]' doc:name="Set timestamp" doc:id="acdf20f1-c03b-410f-9998-ea46b0b7363f" variableName="timestamp"/>
+		<apikit:router config-ref="weather-service-v1-config" />
         <error-handler>
             <on-error-propagate type="APIKIT:BAD_REQUEST">
                 <ee:transform xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
