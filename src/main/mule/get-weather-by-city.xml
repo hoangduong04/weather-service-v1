@@ -9,8 +9,8 @@ http://www.mulesoft.org/schema/mule/wsc http://www.mulesoft.org/schema/mule/wsc/
 http://www.mulesoft.org/schema/mule/validation http://www.mulesoft.org/schema/mule/validation/current/mule-validation.xsd">
 	<flow name="get:\countries\(country)\cities\(city)\weather:weather-service-v1-config" doc:id="eb550c12-832b-4bef-a310-4871d578b993" >
 		<logger level="INFO" doc:name="Log request" doc:id="13711333-ab63-4ace-b020-ba4da5b69b7c" message="#[modules::Logs::log(vars)]" category="weather-service-v1.get-weather-by-city.request" />
-		<set-variable value="#[attributes.uriParams.country default '?']" doc:name="Set country" doc:id="faab37eb-1501-40b9-b583-de66e33bcd57" variableName="country" />
-		<set-variable value="#[attributes.uriParams.city default '?']" doc:name="Set city" doc:id="3fbf2ed1-8a2a-4691-aa9d-332551fb719b" variableName="city" />
+		<set-variable value="#[attributes.uriParams.country]" doc:name="Set country" doc:id="faab37eb-1501-40b9-b583-de66e33bcd57" variableName="country" />
+		<set-variable value="#[attributes.uriParams.city]" doc:name="Set city" doc:id="3fbf2ed1-8a2a-4691-aa9d-332551fb719b" variableName="city" />
 		<flow-ref doc:name="Get weather by city" doc:id="29658d80-a1e8-44c5-979f-7f6851102961" name="get-weather-by-city-request-subflow" />
 		<ee:transform doc:name="Convert payload to XML and get weather data" doc:id="0afe05f3-2667-4bfe-bdb6-0472b62d92a1" >
 			<ee:message >
