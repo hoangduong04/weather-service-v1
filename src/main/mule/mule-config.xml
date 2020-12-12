@@ -6,11 +6,6 @@
 http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
 http://www.mulesoft.org/schema/mule/wsc http://www.mulesoft.org/schema/mule/wsc/current/mule-wsc.xsd">
 	<configuration-properties doc:name="Configuration properties" doc:id="8e64f6e3-8ca0-4e73-827a-441bc7f99cd9" file="weather-service-v1-default.properties" />
-	<wsc:config name="Web_Service_Consumer_Config" doc:name="Web Service Consumer Config" doc:id="70af92d3-b45a-4008-b4fe-76fba830e1ff" >
-		<wsc:connection wsdlLocation="http://localhost:8080/GlobalWeather?wsdl" service="GlobalWeather" port="GlobalWeatherSoap" address="http://localhost:8080/GlobalWeather">
-			<wsc:web-service-security actor="http://schemas.xmlsoap.org/soap/actor/next" />
-		</wsc:connection>
-	</wsc:config>
 	<http:request-config name="Weather_Server_HTTP_Request_configuration" doc:name="HTTP Request configuration" doc:id="abe074da-d778-4bf0-8ae9-5eeb28aa9a07" basePath="${weather-server.basepath}" >
 		<http:request-connection protocol="${weather-server.protocol}" host="${weather-server.host}" port="${weather-server.port}" />
 	</http:request-config>
