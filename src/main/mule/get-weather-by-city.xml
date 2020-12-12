@@ -8,9 +8,9 @@ http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/
 http://www.mulesoft.org/schema/mule/wsc http://www.mulesoft.org/schema/mule/wsc/current/mule-wsc.xsd
 http://www.mulesoft.org/schema/mule/validation http://www.mulesoft.org/schema/mule/validation/current/mule-validation.xsd">
 	<flow name="get:\countries\(country)\cities\(city)\weather:weather-service-v1-config" doc:id="eb550c12-832b-4bef-a310-4871d578b993" >
+		<logger level="INFO" doc:name="Log request" doc:id="13711333-ab63-4ace-b020-ba4da5b69b7c" message="#[modules::Logs::log(vars)]" category="weather-service-v1.get-weather-by-city.request" />
 		<set-variable value="#[attributes.uriParams.country default '?']" doc:name="Set country" doc:id="faab37eb-1501-40b9-b583-de66e33bcd57" variableName="country" />
 		<set-variable value="#[attributes.uriParams.city default '?']" doc:name="Set city" doc:id="3fbf2ed1-8a2a-4691-aa9d-332551fb719b" variableName="city" />
-		<logger level="INFO" doc:name="Logger" doc:id="c8f9878c-3056-412d-925f-3a1dca6d640c" />
 		<flow-ref doc:name="Get weather by city" doc:id="29658d80-a1e8-44c5-979f-7f6851102961" name="get-weather-by-city-request-subflow" />
 		<ee:transform doc:name="Convert payload to XML and get weather data" doc:id="0afe05f3-2667-4bfe-bdb6-0472b62d92a1" >
 			<ee:message >
@@ -31,11 +31,14 @@ output application/json
 payload.NewDataSet mapObject (value, key, index) -> {(key): value}]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>
-		<logger level="INFO" doc:name="Logger" doc:id="0db78aa9-8d60-4210-8b9e-b0fdbcfdf24b" message="get:\get-weather:weather-service-config" />
+		<logger level="INFO" doc:name="Log response" doc:id="e2695c7e-9a9c-4883-8acf-4f987f5b6f77" message='#[modules::Logs::log(vars, {
+	"city": vars.city,
+	"country": vars.country
+})]' category="weather-service-v1.get-weather-by-city.reponse" />
 	</flow>
 	<sub-flow name="get-weather-by-city-request-subflow" doc:id="0960aa05-a1e0-4ca1-8946-92e7784aa14a">
-		<logger level="INFO" doc:name="Logger" doc:id="ea4666bc-dde8-47f9-9b0f-f6f3a2764f76" message="get:\get-weather:weather-service-config" />
-		<http:request method="POST" doc:name="Request" doc:id="68382186-6fca-4219-8cda-8e1170600f98" path="/GlobalWeather" outputMimeType="application/java" config-ref="Weather_Server_HTTP_Request_configuration">
+		<logger level="INFO" doc:name="Log request" doc:id="2774b697-fd3d-482d-a214-7d653fbd57e0" message="#[modules::Logs::log(vars)]" category="weather-service-v1.get-weather-by-city-request-subflow.http.request" />
+		<http:request method="POST" doc:name="POST to Weather webservice to retrieve weather by city" doc:id="68382186-6fca-4219-8cda-8e1170600f98" path="/GlobalWeather" outputMimeType="application/java" config-ref="Weather_Server_HTTP_Request_configuration">
 			<http:body><![CDATA[#["<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:web=\"http://www.webserviceX.NET\">
    <soapenv:Header/>
    <soapenv:Body>
@@ -53,6 +56,6 @@ payload.NewDataSet mapObject (value, key, index) -> {(key): value}]]></ee:set-pa
 	"Content-Type" : "application/xml",
 }]]]></http:headers>
 		</http:request>
-		<logger level="INFO" doc:name="Logger" doc:id="0b714d07-28a8-4a12-a833-e5a24f99cb36" message="get:\get-weather:weather-service-config" />
+		<logger level="INFO" doc:name="Log response" doc:id="0b714d07-28a8-4a12-a833-e5a24f99cb36" message="#[modules::Logs::log(vars)]" category="weather-service-v1.get-weather-by-city-request-subflow.http.response"/>
 	</sub-flow>
 </mule>
