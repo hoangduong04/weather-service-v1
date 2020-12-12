@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:munit="http://www.mulesoft.org/schema/mule/munit" xmlns:munit-tools="http://www.mulesoft.org/schema/mule/munit-tools"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xsi:schemaLocation="
+		http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+		http://www.mulesoft.org/schema/mule/munit http://www.mulesoft.org/schema/mule/munit/current/mule-munit.xsd
+		http://www.mulesoft.org/schema/mule/munit-tools  http://www.mulesoft.org/schema/mule/munit-tools/current/mule-munit-tools.xsd">
+	<munit:config name="get-cities-by-country-test-suite.xml" />
+	<munit:before-suite name="get-cities-by-country-before-suite" doc:id="826a3de0-7b69-445b-aa4e-81cb16c985ec" >
+		<set-variable value="Australia" doc:name="Set country" doc:id="9c456b58-fe68-4851-8e2d-f8bf07a3606b" variableName="country"/>
+	</munit:before-suite>
+	<munit:test name="get-cities-by-country" doc:id="f9bdab6c-682b-43b3-aac7-e0d85a46ba4c" description="Test">
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Mock GetCitiesByCountry request" doc:id="4ea77b62-1092-4fd2-b726-edf10f441c4c" processor="http:request">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="Weather_Server_HTTP_Request_configuration" attributeName="config-ref" />
+					<munit-tools:with-attribute whereValue="/GlobalWeather" attributeName="path" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value="#[readUrl('classpath://mock/countries/cities/input/cities-input.xml', 'application/java')]" />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution >
+			<flow-ref doc:name="get:\countries\(country)\cities" doc:id="6d42949e-6985-484f-b55a-96f633c798d8" name="get:\countries\(country)\cities:weather-service-v1-config"/>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert-that doc:name="Assert payload matches the expected output" doc:id="9c4e6eff-2da0-4ac8-81c7-51d688f62540" expression="#[payload]" is="#[MunitTools::equalTo(readUrl('classpath://mock/countries/cities/output/cities-output.json', 'application/xml'))]"/>
+		</munit:validation>
+	</munit:test>
+
+
+</mule>
