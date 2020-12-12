@@ -3,6 +3,6 @@ fun baseLogDetails(vars) = {
 	txnID: vars.txnID
 }
 
-// Additional logging fields
+// Function to add additional fields to the log
 fun log(vars) = baseLogDetails(vars)
 fun log(vars, extraFields: Object) = baseLogDetails(vars) ++ extraFields

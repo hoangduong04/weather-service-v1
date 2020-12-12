@@ -5,8 +5,12 @@
 	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
 http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
 http://www.mulesoft.org/schema/mule/wsc http://www.mulesoft.org/schema/mule/wsc/current/mule-wsc.xsd">
+	
+	<!-- Properties file -->
 	<configuration-properties doc:name="Configuration properties" doc:id="8e64f6e3-8ca0-4e73-827a-441bc7f99cd9" file="weather-service-v1-default.properties" />
-	<http:request-config name="Weather_Server_HTTP_Request_configuration" doc:name="HTTP Request configuration" doc:id="abe074da-d778-4bf0-8ae9-5eeb28aa9a07" basePath="${weather-server.basepath}" >
-		<http:request-connection protocol="${weather-server.protocol}" host="${weather-server.host}" port="${weather-server.port}" />
+	
+	<!-- Weather webservice config -->
+	<http:request-config name="Weather_Server_HTTP_Request_configuration" doc:name="HTTP Request configuration" doc:id="abe074da-d778-4bf0-8ae9-5eeb28aa9a07" basePath="${weather-ws.basepath}" >
+		<http:request-connection protocol="${weather-ws.protocol}" host="${weather-ws.host}" port="${weather-ws.port}" />
 	</http:request-config>
 </mule>

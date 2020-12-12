@@ -1,12 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:apikit="http://www.mulesoft.org/schema/mule/mule-apikit" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/mule-apikit http://www.mulesoft.org/schema/mule/mule-apikit/current/mule-apikit.xsd 
-http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+<mule xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:apikit="http://www.mulesoft.org/schema/mule/mule-apikit" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/mule-apikit http://www.mulesoft.org/schema/mule/mule-apikit/current/mule-apikit.xsd  http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
     <http:listener-config name="weather-service-v1-httpListenerConfig">
         <http:listener-connection host="0.0.0.0" port="8082" />
     </http:listener-config>
     <apikit:config name="weather-service-v1-config" api="weather-service-v1.raml" outboundHeadersMapName="outboundHeaders" httpStatusVarName="httpStatus" />
     <flow name="weather-service-v1-main">
-        <http:listener config-ref="weather-service-v1-httpListenerConfig" path="/*" allowedMethods="GET">
+        <http:listener config-ref="weather-service-v1-httpListenerConfig" path="/v1/weather-service/*" allowedMethods="GET">
             <http:response statusCode="#[vars.httpStatus default 200]">
                 <http:headers><![CDATA[#[vars.outboundHeaders default {}]]]></http:headers>
             </http:response>
@@ -15,46 +14,42 @@ http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/
                 <http:headers><![CDATA[#[vars.outboundHeaders default {}]]]></http:headers>
             </http:error-response>
         </http:listener>
-        <set-variable value="#[uuid()]" doc:name="Set txnID" doc:id="c3dde7ab-5e56-44dc-97e8-348a5367f165" variableName="txnID"/>
-		<apikit:router config-ref="weather-service-v1-config" />
+        <set-variable value="#[uuid()]" doc:name="Set txnID" doc:id="c3dde7ab-5e56-44dc-97e8-348a5367f165" variableName="txnID" />
+        <apikit:router config-ref="weather-service-v1-config" />
         <error-handler>
-            <on-error-propagate type="APIKIT:BAD_REQUEST">
-				<set-variable value="400" doc:name="Set httpStatus" doc:id="61f7c1db-d137-4f6f-941c-19165d91eeb2" variableName="httpStatus"/>
-				<flow-ref doc:name="Generate error response" doc:id="64347182-8c60-4077-906d-6ffc40e71014" name="generate-error-response"/>
-            </on-error-propagate>
             <on-error-propagate type="APIKIT:NOT_FOUND">
-				<set-variable value="404" doc:name="Set httpStatus" doc:id="98bed79a-b655-4b4a-9ec1-a46e98b33147" variableName="httpStatus"/>
-				<set-variable value="Resource Not Found" doc:name="Set errorType" doc:id="297bec7f-08ce-4803-a0c5-088a98a971d2" variableName="errorType"/>
-				<set-variable value="The resource you requested cannot be found. Please check the developer documentation for more information." doc:name="Set errorDescription" doc:id="18b87ca0-fa35-4a0b-8844-5adcc721b069" variableName="errorDescription"/>
-				<flow-ref doc:name="Generate error response" doc:id="f3bb483a-360d-4f6e-a3c1-673b5cae7c44" name="generate-error-response" />
+                <set-variable value="404" doc:name="Set httpStatus" doc:id="98bed79a-b655-4b4a-9ec1-a46e98b33147" variableName="httpStatus" />
+                <set-variable value="Resource Not Found" doc:name="Set errorType" doc:id="297bec7f-08ce-4803-a0c5-088a98a971d2" variableName="errorType" />
+                <set-variable value="The resource you requested cannot be found. Please check the developer documentation for more information." doc:name="Set errorDescription" doc:id="18b87ca0-fa35-4a0b-8844-5adcc721b069" variableName="errorDescription" />
+                <flow-ref doc:name="Generate error response" doc:id="f3bb483a-360d-4f6e-a3c1-673b5cae7c44" name="generate-error-response" />
             </on-error-propagate>
             <on-error-propagate type="APIKIT:METHOD_NOT_ALLOWED">
-				<set-variable value="405" doc:name="Set httpStatus" doc:id="8554f31d-91a0-4fda-b9f9-c122ee5b5c3e" variableName="httpStatus"/>
-				<set-variable value="Method Not Allowed" doc:name="Set errorType" doc:id="3a3624a5-b2cf-401f-a7e1-34861390f9e2" variableName="errorType" />
-				<set-variable value="Your request method is not supported by the target resource. Please check the developer documentation for more information." doc:name="Set errorDescription" doc:id="74f7b68a-1af1-4201-be89-51275d8f35ee" variableName="errorDescription" />
-				<flow-ref doc:name="Generate error response" doc:id="3c14ccfb-cb6b-43fb-a891-0173ebc55a44" name="generate-error-response" />
+                <set-variable value="405" doc:name="Set httpStatus" doc:id="8554f31d-91a0-4fda-b9f9-c122ee5b5c3e" variableName="httpStatus" />
+                <set-variable value="Method Not Allowed" doc:name="Set errorType" doc:id="3a3624a5-b2cf-401f-a7e1-34861390f9e2" variableName="errorType" />
+                <set-variable value="Your request method is not supported by the target resource. Please check the developer documentation for more information." doc:name="Set errorDescription" doc:id="74f7b68a-1af1-4201-be89-51275d8f35ee" variableName="errorDescription" />
+                <flow-ref doc:name="Generate error response" doc:id="3c14ccfb-cb6b-43fb-a891-0173ebc55a44" name="generate-error-response" />
             </on-error-propagate>
             <on-error-propagate type="APIKIT:NOT_ACCEPTABLE">
-				<set-variable value="406" doc:name="Set httpStatus" doc:id="5ae86a41-3ff8-4645-9fcb-bbfc1d5ba462" variableName="httpStatus"/>
-				<set-variable value="Not Acceptable" doc:name="Set errorType" doc:id="744b9607-2d7d-4d11-88b1-1b8e473a43d6" variableName="errorType" />
-				<flow-ref doc:name="Generate error response" doc:id="182784f5-9b4f-47ec-94bc-0c2c5467a4fa" name="generate-error-response" />
+                <set-variable value="406" doc:name="Set httpStatus" doc:id="5ae86a41-3ff8-4645-9fcb-bbfc1d5ba462" variableName="httpStatus" />
+                <set-variable value="Not Acceptable" doc:name="Set errorType" doc:id="744b9607-2d7d-4d11-88b1-1b8e473a43d6" variableName="errorType" />
+                <flow-ref doc:name="Generate error response" doc:id="182784f5-9b4f-47ec-94bc-0c2c5467a4fa" name="generate-error-response" />
             </on-error-propagate>
-			<on-error-propagate type="APIKIT:UNSUPPORTED_MEDIA_TYPE">
-            	<set-variable value="415" doc:name="Set httpStatus" doc:id="daec321f-e37a-4b18-9ba4-b529c3783559" variableName="httpStatus" />
-				<set-variable value="UnsupportedMediaType" doc:name="Set errorType" doc:id="a6d765eb-dd2a-42df-bda2-66af9a2369c9" variableName="errorType" />
-				<set-variable value="You requested a resource in an unsupported format. Please check the developer documentation for more information." doc:name="Set errorDescription" doc:id="49b800fd-1eb8-4c1e-bb1e-bcd0853cdecb" variableName="errorDescription" />
-				<flow-ref doc:name="Generate error response" doc:id="a0994606-4d10-414a-b544-b3e43e1d0ecf" name="generate-error-response" />
+            <on-error-propagate type="APIKIT:UNSUPPORTED_MEDIA_TYPE">
+                <set-variable value="415" doc:name="Set httpStatus" doc:id="daec321f-e37a-4b18-9ba4-b529c3783559" variableName="httpStatus" />
+                <set-variable value="UnsupportedMediaType" doc:name="Set errorType" doc:id="a6d765eb-dd2a-42df-bda2-66af9a2369c9" variableName="errorType" />
+                <set-variable value="You requested a resource in an unsupported format. Please check the developer documentation for more information." doc:name="Set errorDescription" doc:id="49b800fd-1eb8-4c1e-bb1e-bcd0853cdecb" variableName="errorDescription" />
+                <flow-ref doc:name="Generate error response" doc:id="a0994606-4d10-414a-b544-b3e43e1d0ecf" name="generate-error-response" />
             </on-error-propagate>
             <on-error-propagate type="APIKIT:NOT_IMPLEMENTED">
-            	<set-variable value="501" doc:name="Set httpStatus" doc:id="605c9ae4-d8f2-4398-853d-db7d26efd93d" variableName="httpStatus"/>
-				<flow-ref doc:name="Generate error response" doc:id="9a642082-1ed9-4f45-80fa-1862abe161c7" name="generate-error-response" />
+                <set-variable value="501" doc:name="Set httpStatus" doc:id="605c9ae4-d8f2-4398-853d-db7d26efd93d" variableName="httpStatus" />
+                <flow-ref doc:name="Generate error response" doc:id="9a642082-1ed9-4f45-80fa-1862abe161c7" name="generate-error-response" />
             </on-error-propagate>
-			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="0d2cd008-d7ed-4dbe-bfe1-cd1633bb67a4" type="ANY">
-				<set-variable value="500" doc:name="Set httpStatus" doc:id="bfdb2c98-8eed-4022-8c2e-ed9edca22f38" variableName="httpStatus" />
-				<logger level="INFO" doc:name="Log exception" doc:id="60ce8e37-8be8-4929-85cd-256ceb8a83ec" category="weather-service-v1.exception" message="#[${file::mappings/logs/exception-logs.dwl}]"/>
-				<ee:transform doc:name="Generate server error response" doc:id="d7e54164-7991-4526-8eb4-221ff5f3637d">
-					<ee:message>
-						<ee:set-payload><![CDATA[%dw 2.0
+            <on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="0d2cd008-d7ed-4dbe-bfe1-cd1633bb67a4" type="ANY">
+                <set-variable value="500" doc:name="Set httpStatus" doc:id="bfdb2c98-8eed-4022-8c2e-ed9edca22f38" variableName="httpStatus" />
+                <logger level="INFO" doc:name="Log exception" doc:id="60ce8e37-8be8-4929-85cd-256ceb8a83ec" category="weather-service-v1.exception" message="#[${file::mappings/logs/exception-logs.dwl}]" />
+                <ee:transform doc:name="Generate server error response" doc:id="d7e54164-7991-4526-8eb4-221ff5f3637d">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
 output application/json
 ---
 {
@@ -62,16 +57,20 @@ output application/json
 	"errorType": error.errorType,
 	"errorDescription": error.description
 }]]></ee:set-payload>
-					</ee:message>
-				</ee:transform>
-			</on-error-propagate>
+                    </ee:message>
+                </ee:transform>
+            </on-error-propagate>
+            <on-error-propagate type="APIKIT:BAD_REQUEST">
+                <set-variable value="400" doc:name="Set httpStatus" doc:id="61f7c1db-d137-4f6f-941c-19165d91eeb2" variableName="httpStatus" />
+                <flow-ref doc:name="Generate error response" doc:id="64347182-8c60-4077-906d-6ffc40e71014" name="generate-error-response" />
+            </on-error-propagate>
         </error-handler>
     </flow>
-	<sub-flow name="generate-error-response" doc:id="7e3cba47-2269-416e-b218-b8213603c762" >
-		<logger level="INFO" doc:name="Log exception" doc:id="3fbe9bc2-44b2-4fe3-8345-8cfa52c32aac" message="#[${file::mappings/logs/exception-logs.dwl}]" category="weather-service-v1.exception"/>
-		<ee:transform doc:name="Generate error message" doc:id="7ae5e1ff-5e63-44ba-aee4-e6b3ad6cb7c2" >
-			<ee:message >
-				<ee:set-payload ><![CDATA[%dw 2.0
+    <sub-flow name="generate-error-response" doc:id="7e3cba47-2269-416e-b218-b8213603c762">
+        <logger level="INFO" doc:name="Log exception" doc:id="3fbe9bc2-44b2-4fe3-8345-8cfa52c32aac" message="#[${file::mappings/logs/exception-logs.dwl}]" category="weather-service-v1.exception" />
+        <ee:transform doc:name="Generate error message" doc:id="7ae5e1ff-5e63-44ba-aee4-e6b3ad6cb7c2">
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
 output application/json
 ---
 {
@@ -79,10 +78,10 @@ output application/json
 	"errorType": vars.errorType default error.errorType,
 	"errorDescription": vars.errorDescription default error.description
 }]]></ee:set-payload>
-			</ee:message>
-		</ee:transform>
-	</sub-flow>
-	<flow name="weather-service-v1-console">
+            </ee:message>
+        </ee:transform>
+    </sub-flow>
+    <flow name="weather-service-v1-console">
         <http:listener config-ref="weather-service-v1-httpListenerConfig" path="/console/*">
             <http:response statusCode="#[vars.httpStatus default 200]">
                 <http:headers><![CDATA[#[vars.outboundHeaders default {}]]]></http:headers>
@@ -95,10 +94,10 @@ output application/json
         <apikit:console config-ref="weather-service-v1-config" />
         <error-handler>
             <on-error-propagate type="APIKIT:NOT_FOUND">
-				<set-variable value="404" doc:name="Set httpStatus" doc:id="be337c97-8638-4f58-b84b-f033cf001562" variableName="httpStatus" />
-				<set-variable value="Resource Not Found" doc:name="Set errorType" doc:id="902dec37-ce3c-4639-bd0e-0896d9ae7227" variableName="errorType" />
-				<set-variable value="The resource you requested cannot be found. Please check the developer documentation for more information." doc:name="Set errorDescription" doc:id="5c3c331f-0ea5-4323-b231-597d6298d939" variableName="errorDescription" />
-				<flow-ref doc:name="Generate error response" doc:id="c52c0378-d4ba-462e-ab4f-f133ace781f0" name="generate-error-response" />
+                <set-variable value="404" doc:name="Set httpStatus" doc:id="be337c97-8638-4f58-b84b-f033cf001562" variableName="httpStatus" />
+                <set-variable value="Resource Not Found" doc:name="Set errorType" doc:id="902dec37-ce3c-4639-bd0e-0896d9ae7227" variableName="errorType" />
+                <set-variable value="The resource you requested cannot be found. Please check the developer documentation for more information." doc:name="Set errorDescription" doc:id="5c3c331f-0ea5-4323-b231-597d6298d939" variableName="errorDescription" />
+                <flow-ref doc:name="Generate error response" doc:id="c52c0378-d4ba-462e-ab4f-f133ace781f0" name="generate-error-response" />
             </on-error-propagate>
         </error-handler>
     </flow>

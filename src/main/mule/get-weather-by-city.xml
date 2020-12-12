@@ -20,24 +20,28 @@ import decodeXmlResponse from modules::Xml
 
 var weatherData = (read(decodeXmlResponse(payload), "application/xml")).Envelope.Body.GetWeatherResponse
 ---
+// Need to put the weather data inside a "weather" object to convert to xml
 if (isEmpty(weatherData))
 	{
 		"weather": null
 	}
 else
 	{
+		// if weather data is not empty then need to read the data as XML again
+		// as the returned data from webservice was converted to CDATA twice
 		"weather": read(weatherData, "application/xml")
 	}
 		]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>
-		<choice doc:name="Choice" doc:id="ae870d50-803f-4a0e-a2ff-d0ec4ace91f7" >
+		<choice doc:name="Is returned weather data empty?" doc:id="ae870d50-803f-4a0e-a2ff-d0ec4ace91f7" >
 			<when expression="#[!isEmpty(payload.weather)]">
 				<ee:transform doc:name="Map XML weather data to JSON" doc:id="e1e07716-1896-49a9-a09c-869b62148b80">
 			<ee:message>
 				<ee:set-payload><![CDATA[%dw 2.0
 output application/json
 ---
+// Map XML payload to convert to JSON
 payload.weather.NewDataSet mapObject (value, key, index) -> {(key): value}]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>

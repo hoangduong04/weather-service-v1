@@ -21,14 +21,16 @@ var citiesData = decodeXmlResponse(payload)
 (read(citiesData, "application/xml")).Envelope.Body.GetCitiesByCountryResponse]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>
-		<choice doc:name="Choice" doc:id="bf420045-ff4f-4544-8477-5c2c3a265694" >
+		<choice doc:name="Is returned cities data empty?" doc:id="bf420045-ff4f-4544-8477-5c2c3a265694" >
 			<when expression="#[!isEmpty(payload)]">
 				<ee:transform doc:name="Map XML cities data to JSON" doc:id="39ab812d-aeb3-4146-95cf-8354e2742983">
 			<ee:message>
 				<ee:set-payload><![CDATA[%dw 2.0
 output application/json
 ---
-(read(payload, 'application/xml')).NewDataSet.*Table map (value, index) -> {"country": (value.Country), "city": (value.City)}]]></ee:set-payload>
+// Convert string payload to XML before mapping
+(read(payload, 'application/xml')).NewDataSet.*Table map (value, index) -> {"country": (value.Country), "city": (value.City)}
+]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>
 			</when>
