@@ -43,10 +43,12 @@ The Weather Service relies on the availability of the GlobalWeather service and 
 
 #### 2.1.Interface
 
-| **Service Name** | Weather Service |
-| **Service Version** | v1.0 |
-| **Base URL** | [http://localhost:8082/{version}/weather-service](http://localhost:8082/%7Bversion%7D/weather-service) |
-| **Operation Name** | GET |
+|                     |                                                     |
+|---------------------|-----------------------------------------------------|
+| **Service Name**    | Weather Service                                     |
+| **Service Version** | v1.0                                                |
+| **Base URL**        | http://localhost:8082/%7Bversion%7D/weather-service |
+| **Method Name**     | GET                                                 |
 
 #### 2.2.Available endpoints
 
