@@ -12,23 +12,39 @@ http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/htt
 		<ee:transform doc:name="Convert payload to XML and get cities data" doc:id="574a519d-1442-41f1-b24e-21d67d237441">
 			<ee:message>
 				<ee:set-payload><![CDATA[%dw 2.0
-output application/xml
+output application/java
 import decodeXmlResponse from modules::Xml
 
 var citiesData = decodeXmlResponse(payload)
 
 ---
-read((read(citiesData, "application/xml")).Envelope.Body.GetCitiesByCountryResponse, "application/xml")]]></ee:set-payload>
+(read(citiesData, "application/xml")).Envelope.Body.GetCitiesByCountryResponse]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>
-		<ee:transform doc:name="Map XML cities data to JSON" doc:id="39ab812d-aeb3-4146-95cf-8354e2742983">
+		<choice doc:name="Choice" doc:id="bf420045-ff4f-4544-8477-5c2c3a265694" >
+			<when expression="#[!isEmpty(payload)]">
+				<ee:transform doc:name="Map XML cities data to JSON" doc:id="39ab812d-aeb3-4146-95cf-8354e2742983">
 			<ee:message>
 				<ee:set-payload><![CDATA[%dw 2.0
 output application/json
 ---
-payload.NewDataSet.*Table map (value, index) -> {"country": (value.Country), "city": (value.City)}]]></ee:set-payload>
+(read(payload, 'application/xml')).NewDataSet.*Table map (value, index) -> {"country": (value.Country), "city": (value.City)}]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>
+			</when>
+			<otherwise>
+				<ee:transform doc:name="Return error message" doc:id="6c5a1337-86f9-4fe9-9ceb-a280dc121900">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"message": "Unable to retrive cities data for the requested country"
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</otherwise>
+		</choice>
 		<logger level="INFO" doc:name="Log response" doc:id="01405356-e296-4c5f-8451-954a86eafcda" message='#[modules::Logs::log(vars, {"country": vars.country})]' category="weather-service-v1.get-cities-by-country.response"/>
 	</flow>
 	<sub-flow name="get-cities-by-country-request-subflow" doc:id="640c1309-a097-47c3-a195-921e39e1d089" >
@@ -46,7 +62,7 @@ payload.NewDataSet.*Table map (value, index) -> {"country": (value.Country), "ci
 			<http:headers ><![CDATA[#[output application/java
 ---
 {
-	"Content-Type" : "application/xml",
+	"Content-Type" : "application/xml"
 }]]]></http:headers>
 		</http:request>
 		<logger level="INFO" doc:name="Log response" doc:id="1e3a5fb7-5a46-4c09-a2c3-ab374336eb8f" message="#[modules::Logs::log(vars)]" category="weather-service-v1.get-cities-by-country-request-subflow.http.response"/>

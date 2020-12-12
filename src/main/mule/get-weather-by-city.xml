@@ -18,20 +18,43 @@ http://www.mulesoft.org/schema/mule/validation http://www.mulesoft.org/schema/mu
 output application/xml
 import decodeXmlResponse from modules::Xml
 
-var weatherData = decodeXmlResponse(payload)
-
+var weatherData = (read(decodeXmlResponse(payload), "application/xml")).Envelope.Body.GetWeatherResponse
 ---
-read((read(weatherData, "application/xml")).Envelope.Body.GetWeatherResponse, "application/xml")]]></ee:set-payload>
+if (isEmpty(weatherData))
+	{
+		"weather": null
+	}
+else
+	{
+		"weather": read(weatherData, "application/xml")
+	}
+		]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>
-		<ee:transform doc:name="Map XML weather data to JSON" doc:id="e1e07716-1896-49a9-a09c-869b62148b80" >
-			<ee:message >
-				<ee:set-payload ><![CDATA[%dw 2.0
+		<choice doc:name="Choice" doc:id="ae870d50-803f-4a0e-a2ff-d0ec4ace91f7" >
+			<when expression="#[!isEmpty(payload.weather)]">
+				<ee:transform doc:name="Map XML weather data to JSON" doc:id="e1e07716-1896-49a9-a09c-869b62148b80">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
 output application/json
 ---
-payload.NewDataSet mapObject (value, key, index) -> {(key): value}]]></ee:set-payload>
+payload.weather.NewDataSet mapObject (value, key, index) -> {(key): value}]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>
+			</when>
+			<otherwise >
+				<ee:transform doc:name="Return error message" doc:id="9851d731-4889-47c0-8f83-eddde7d05216" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"message": "Unable to retrive weather data for the requested city"
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</otherwise>
+		</choice>
 		<logger level="INFO" doc:name="Log response" doc:id="e2695c7e-9a9c-4883-8acf-4f987f5b6f77" message='#[modules::Logs::log(vars, {
 	"city": vars.city,
 	"country": vars.country
@@ -54,7 +77,7 @@ payload.NewDataSet mapObject (value, key, index) -> {(key): value}]]></ee:set-pa
 			<http:headers><![CDATA[#[output application/java
 ---
 {
-	"Content-Type" : "application/xml",
+	"Content-Type" : "application/xml"
 }]]]></http:headers>
 		</http:request>
 		<logger level="INFO" doc:name="Log response" doc:id="0b714d07-28a8-4a12-a833-e5a24f99cb36" message="#[modules::Logs::log(vars)]" category="weather-service-v1.get-weather-by-city-request-subflow.http.response"/>
