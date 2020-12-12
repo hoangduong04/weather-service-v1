@@ -1,23 +1,27 @@
 #%RAML 1.0
-baseUri: ???
+baseUri: http://localhost:8082/v1/global-weather
 title: Weather Service API
 version: v1
 
-/get-weather:
-  displayName: Get weather
-  description:
-  get:
-    queryParameters:
-      city:
-        displayName: City
-        type: string
-        required: false
-      country:
-        displayName: Country
-        type: string
-        required: false
-    responses:
-      200:
-        body:
-          application/json:
-            example: 
+/countries:
+  /{country}:
+    /cities:
+      displayName: Cities by country
+      description: Get the names of the cities for given country
+      get:
+        responses:
+          200:
+            body:
+              application/json:
+                example: 
+      /{city}:
+        /weather:
+          displayName: Weather by city
+          description: Get weather data for given city
+          get:
+            responses:
+              200:
+                body:
+                  application/json:
+                    example: 
+    

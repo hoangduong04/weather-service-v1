@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:validation="http://www.mulesoft.org/schema/mule/validation" xmlns:wsc="http://www.mulesoft.org/schema/mule/wsc"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/wsc http://www.mulesoft.org/schema/mule/wsc/current/mule-wsc.xsd
+http://www.mulesoft.org/schema/mule/validation http://www.mulesoft.org/schema/mule/validation/current/mule-validation.xsd">
+	<flow name="get:\countries\(country)\cities\(city)\weather:weather-service-v1-config" doc:id="eb550c12-832b-4bef-a310-4871d578b993" >
+		<set-variable value="#[attributes.uriParams.country default '?']" doc:name="Set country" doc:id="faab37eb-1501-40b9-b583-de66e33bcd57" variableName="country" />
+		<set-variable value="#[attributes.uriParams.city default '?']" doc:name="Set city" doc:id="3fbf2ed1-8a2a-4691-aa9d-332551fb719b" variableName="city" />
+		<logger level="INFO" doc:name="Logger" doc:id="c8f9878c-3056-412d-925f-3a1dca6d640c" />
+		<flow-ref doc:name="Get weather by city" doc:id="29658d80-a1e8-44c5-979f-7f6851102961" name="get-weather-by-city-request-subflow" />
+		<ee:transform doc:name="Convert payload to XML and get weather data" doc:id="0afe05f3-2667-4bfe-bdb6-0472b62d92a1" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/xml
+
+var weatherData = payload replace "&amp;" with "&" replace "&lt;" with "<" replace "&gt;" with ">"
+
+---
+read((read(weatherData, "application/xml")).Envelope.Body.GetWeatherResponse, "application/xml")]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<ee:transform doc:name="Map XML weather data to JSON" doc:id="e1e07716-1896-49a9-a09c-869b62148b80" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload.NewDataSet mapObject (value, key, index) -> {(key): value}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="0db78aa9-8d60-4210-8b9e-b0fdbcfdf24b" message="get:\get-weather:weather-service-config" />
+	</flow>
+	<sub-flow name="get-weather-by-city-request-subflow" doc:id="0960aa05-a1e0-4ca1-8946-92e7784aa14a">
+		<logger level="INFO" doc:name="Logger" doc:id="ea4666bc-dde8-47f9-9b0f-f6f3a2764f76" message="get:\get-weather:weather-service-config" />
+		<http:request method="POST" doc:name="Request" doc:id="68382186-6fca-4219-8cda-8e1170600f98" path="/GlobalWeather" outputMimeType="application/java" config-ref="Weather_Server_HTTP_Request_configuration">
+			<http:body><![CDATA[#["<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:web=\"http://www.webserviceX.NET\">
+   <soapenv:Header/>
+   <soapenv:Body>
+      <web:GetWeather>
+         <!--Optional:-->
+         <web:CityName>$(vars.city)</web:CityName>
+         <!--Optional:-->
+         <web:CountryName>$(vars.country)</web:CountryName>
+      </web:GetWeather>
+   </soapenv:Body>
+</soapenv:Envelope>"]]]></http:body>
+			<http:headers><![CDATA[#[output application/java
+---
+{
+	"Content-Type" : "application/xml",
+}]]]></http:headers>
+		</http:request>
+		<logger level="INFO" doc:name="Logger" doc:id="0b714d07-28a8-4a12-a833-e5a24f99cb36" message="get:\get-weather:weather-service-config" />
+	</sub-flow>
+</mule>
