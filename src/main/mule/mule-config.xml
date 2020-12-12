@@ -6,11 +6,17 @@
 http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
 http://www.mulesoft.org/schema/mule/wsc http://www.mulesoft.org/schema/mule/wsc/current/mule-wsc.xsd">
 	
-	<!-- Properties file -->
-	<configuration-properties doc:name="Configuration properties" doc:id="8e64f6e3-8ca0-4e73-827a-441bc7f99cd9" file="weather-service-v1-default.properties" />
+	<!-- Default properties file -->
+	<configuration-properties doc:name="Default configuration properties" doc:id="8e64f6e3-8ca0-4e73-827a-441bc7f99cd9" file="weather-service-v1-default.properties" />
 	
 	<!-- Weather webservice config -->
 	<http:request-config name="Weather_Server_HTTP_Request_configuration" doc:name="HTTP Request configuration" doc:id="abe074da-d778-4bf0-8ae9-5eeb28aa9a07" basePath="${weather-ws.basepath}" >
 		<http:request-connection protocol="${weather-ws.protocol}" host="${weather-ws.host}" port="${weather-ws.port}" />
 	</http:request-config>
+	
+	<!-- Environment based properties file -->
+	<configuration-properties doc:name="Environment based configuration properties" doc:id="792ea131-2524-43e6-89b7-b09876adb071" file="weather-service-v1-${env}.properties" />
+	
+	<!-- Default environment -->
+	<global-property doc:name="Global Property" doc:id="29999854-ca18-42bd-a3c3-dbab508b0fb0" name="env" value="DEV" />
 </mule>
